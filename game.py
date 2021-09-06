@@ -2,11 +2,13 @@ import os
 import pygame
 import time
 
+from title import  Title
+
 class Game():
     def __init__(self):
         pygame.init()
-        self.game_width, self.game_height = 480,270
-        self.screen_width, self.screen_height = 960,540
+        self.game_width, self.game_height = 480, 270
+        self.screen_width, self.screen_height = 960, 540
         self.game_canvas = pygame.Surface((self.game_width,self.game_height))
         self.screen = pygame.display.set_mode((self.screen_width,self.screen_height))
         self.running = True
@@ -14,7 +16,9 @@ class Game():
         self.actions = {'left': False, "right": False, 'up': False, 'down': False, "A": False, "B": False, "Start": False}
         self.dt,self.prev_time = 0,0
         self.state_stack = []
-        self.load_assets()     # doesn't do anything right now
+        self.font = pygame.font.SysFont(None, 48) #.SysFont('Comic Sans MS', 30)
+        self.load_assets()
+        self.load_states()
 
     def get_events(self):
         for event in pygame.event.get():
@@ -60,7 +64,7 @@ class Game():
 
 
     def update(self):
-        pass
+        self.state_stack[-1].update(self.dt, self.actions)
 
     def load_assets(self):
         self.assets_dir = os.path.join("assets")
@@ -72,6 +76,7 @@ class Game():
         self.prev_time = now
 
     def render(self):
+        self.state_stack[-1].render(self.game_canvas)
         self.screen.blit(pygame.transform.scale(self.game_canvas,(self.screen_width,self.screen_height)),(0,0))
         pygame.display.flip()
 
@@ -88,8 +93,13 @@ class Game():
             self.update()
             self.render()
 
+    def reset_keys(self):
+        for action in self.actions:
+            self.actions[action] = False
 
-
+    def load_states(self):
+        self.title_screen = Title(self)
+        self.state_stack.append(self.title_screen)
 
 if __name__ == '__main__':
     g = Game()
